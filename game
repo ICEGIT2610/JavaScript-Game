@@ -1,0 +1,83 @@
+// Canvas setup
+const canvas = document.getElementById("game-canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = 800;
+canvas.height = 600;
+
+// Player setup
+const player = {
+  x: canvas.width / 2,
+  y: canvas.height - 50,
+  width: 50,
+  height: 50,
+  color: "red",
+  speed: 5
+};
+
+// Keyboard controls
+const keys = {};
+document.addEventListener("keydown", event => {
+  keys[event.code] = true;
+});
+document.addEventListener("keyup", event => {
+  keys[event.code] = false;
+});
+
+// Enemies setup
+let enemies = [];
+function spawnEnemy() {
+  const enemy = {
+    x: Math.floor(Math.random() * (canvas.width - 50)),
+    y: 0,
+    width: 50,
+    height: 50,
+    color: "blue",
+    speed: 2
+  };
+  enemies.push(enemy);
+}
+setInterval(spawnEnemy, 1000);
+
+// Game loop
+function gameLoop() {
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Move player
+  if (keys["ArrowLeft"] && player.x > 0) {
+    player.x -= player.speed;
+  }
+  if (keys["ArrowRight"] && player.x < canvas.width - player.width) {
+    player.x += player.speed;
+  }
+  
+  // Draw player
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+  
+  // Move enemies and detect collisions
+  enemies.forEach((enemy, index) => {
+    enemy.y += enemy.speed;
+    if (enemy.y > canvas.height) {
+      enemies.splice(index, 1);
+    }
+    if (detectCollision(player, enemy)) {
+      alert("Game over!");
+      location.reload();
+    }
+    ctx.fillStyle = enemy.color;
+    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+  });
+  
+  // Request next frame
+  requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
+
+// Collision detection
+function detectCollision(obj1, obj2) {
+  return obj1.x < obj2.x + obj2.width &&
+         obj1.x + obj1.width > obj2.x &&
+         obj1.y < obj2.y + obj2.height &&
+         obj1.y + obj1.height > obj2.y;
+}
